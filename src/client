@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+
+$params = getopt('', ['address::', 'port::', 'msg::']);
+
+$address = $params['address'] ?? '127.0.0.1';
+$port = $params['port'] ?? 5030;
+$message = $params['msg'] ?? 'GET /';
+$message .= PHP_EOL;
+
+$socket_create = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+if ($socket_create === false) {
+    die('Socket created failed: ' . socket_strerror(socket_last_error()) . PHP_EOL);
+}
+
+$connect = socket_connect($socket_create, $address, $port);
+if ($connect === false) {
+    die('Socket connect failed: ' . socket_strerror(socket_last_error()) . PHP_EOL);
+}
+
+
+socket_write($socket_create, $message, strlen($message));
+
+$answer = '';
+while (($line = socket_read($socket_create, 2048) ) !== '') {
+    $answer .= $line;
+}
+
+echo $answer . PHP_EOL;
+
+socket_close($socket_create);
